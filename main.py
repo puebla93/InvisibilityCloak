@@ -55,9 +55,9 @@ def main():
         mask = cv2.inRange(hsv, lower_blue, upper_blue)
         cv2.imshow('mask', mask)
 
-        kernel = np.ones((5,5),np.uint8)
-        dilation = cv2.dilate(mask,kernel,iterations = 2)
-        erosion = cv2.erode(dilation,kernel,iterations = 2)
+        kernel = np.ones((15,15),np.uint8)
+        dilation = cv2.dilate(mask,kernel,iterations = 1)
+        erosion = cv2.erode(dilation,kernel,iterations = 1)
         mask = erosion
 
         # Bitwise-AND mask and background image
