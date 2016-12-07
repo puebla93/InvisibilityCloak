@@ -7,6 +7,28 @@ def main():
     camera = cvwindows.create('camera')
     capture = cv2.VideoCapture(0)
 
+    hsv_lower = cvwindows.create("HSV_LOWER")
+
+    hsv_lower.add_trackbar("HUE-Lower",default = 90, maxval = 360, allow_zero = True)
+    hsv_lower.add_trackbar("SAT-Lower",default = 120, maxval = 255, allow_zero = True)
+    hsv_lower.add_trackbar("VAL-Lower",default = 40, maxval = 255, allow_zero = True)
+    
+    color_lower = np.zeros((50,400,3), np.uint8)
+    color_lower[:] = [hsv_lower["HUE-Lower"],hsv_lower["SAT-Lower"],hsv_lower["VAL-Lower"]]
+    color_lower = cv2.cvtColor(color_lower, cv2.COLOR_HSV2BGR)
+    hsv_lower.show(color_lower)
+    
+    hsv_upper = cvwindows.create("HSV_UPPER")
+
+    hsv_upper.add_trackbar("HUE-Upper",default = 130, maxval = 360, allow_zero = True)
+    hsv_upper.add_trackbar("SAT-Upper",default = 255, maxval = 255, allow_zero = True)
+    hsv_upper.add_trackbar("VAL-Upper",default = 255, maxval = 255, allow_zero = True)
+    
+    color_upper = np.zeros((50,400,3), np.uint8)
+    color_upper[:] = [hsv_upper["HUE-Upper"],hsv_upper["SAT-Upper"],hsv_upper["VAL-Upper"]]
+    color_upper = cv2.cvtColor(color_upper, cv2.COLOR_HSV2BGR)
+    hsv_upper.show(color_upper)
+
     print('sleeping 5 seconds')
     time.sleep(5)
 
@@ -26,11 +48,17 @@ def main():
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         # define range of blue color in HSV
-        lower_blue = np.array([110,50,50])
-        upper_blue = np.array([130,255,255])
+        lower_blue = np.array([hsv_lower["HUE-Lower"],hsv_lower["SAT-Lower"],hsv_lower["VAL-Lower"]])
+        upper_blue = np.array([hsv_upper["HUE-Upper"],hsv_upper["SAT-Upper"],hsv_upper["VAL-Upper"]])
 
         # Threshold the HSV image to get only blue colors
         mask = cv2.inRange(hsv, lower_blue, upper_blue)
+        cv2.imshow('mask', mask)
+
+        kernel = np.ones((5,5),np.uint8)
+        dilation = cv2.dilate(mask,kernel,iterations = 2)
+        erosion = cv2.erode(dilation,kernel,iterations = 2)
+        mask = erosion
 
         # Bitwise-AND mask and background image
         bitwise_back_mask = cv2.bitwise_and(background, background, mask= mask)
@@ -44,7 +72,18 @@ def main():
         # Sum bitwise_image_mask_inv and bitwise_back_mask images
         image_result = bitwise_back_mask + bitwise_image_mask_inv
 
+
+        color_lower[:] = [hsv_lower["HUE-Lower"],hsv_lower["SAT-Lower"],hsv_lower["VAL-Lower"]]
+        color_lower = cv2.cvtColor(color_lower, cv2.COLOR_HSV2BGR)
+        hsv_lower.show(color_lower)
+
+        color_upper[:] = [hsv_upper["HUE-Upper"],hsv_upper["SAT-Upper"],hsv_upper["VAL-Upper"]]
+        color_upper = cv2.cvtColor(color_upper, cv2.COLOR_HSV2BGR)
+        hsv_upper.show(color_upper)
+
         camera.show(image_result)
+
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main()
