@@ -4,6 +4,7 @@ import numpy as np
 import time
 import argparse
 
+background_with=['b', 'B']
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Harry Potter's coat")
@@ -15,18 +16,15 @@ def parse_args():
 args = parse_args()
 
 def main():
-    # args = parse_args()
-
     camera = cvwindows.create('camera')
     capture = cv2.VideoCapture(args.camera)
-    # capture.set(cv2.cv)
 
     #creating hsv window scale for range
     hsv_window = create_hsv_window()
     hue_sat = create_hue_sat_scale()
     new_hue_sat = draw_rectangle(hue_sat, hsv_window)
     hsv_window.show(new_hue_sat)
-    
+
     print('sleeping 2 seconds')
     time.sleep(2)
 
@@ -36,8 +34,13 @@ def main():
     background = cv2.flip(background, 1)
 
     while cvwindows.event_loop():
-        
+
         _, image = capture.read()
+
+        last_key = chr(cv2.waitKey(1) & 0xFF)
+        if last_key in background_with:
+            _, background = capture.read()
+            background = cv2.flip(background, 1)
 
         # Flip the image
         original_image = cv2.flip(image, 1)
@@ -103,6 +106,7 @@ def draw_rectangle(image, window):
             val[x,y,1] = s
             val[x,y,2] = x
     new_val = val.copy()
+    # new_val = cv2.cvtColor(new_val, cv2.COLOR_HSV2BGR)
     cv2.line(new_val,(0,window["VAL-Lower"]),(100,window["VAL-Lower"]),(255,255,255),1)
     cv2.line(new_val,(0,window["VAL-Upper"]),(100,window["VAL-Upper"]),(255,255,255),1)
     cv2.imshow('value', new_val)
@@ -163,7 +167,6 @@ def apply_mask(original_image, background, mask):
 def debug(window_name, image):
     if(args.debugging):
         cv2.imshow(window_name, image)
-
 
 if __name__ == '__main__':
     main()
