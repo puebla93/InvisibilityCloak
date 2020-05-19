@@ -94,8 +94,8 @@ def draw_rectangle(image, window):
     new_image = image.copy()
     cv2.rectangle(new_image, (x1,y1), (x2, y2), (255, 255, 255), 1)
 
-    x3 = (x1 + x2)/2
-    y3 = (y1 + y2)/2
+    x3 = (x1 + x2)//2
+    y3 = (y1 + y2)//2
     h,s,v = image[y3,x3]
 
     val = np.zeros((256,100,3), np.uint8)
@@ -113,41 +113,40 @@ def draw_rectangle(image, window):
 
     return new_image
 
-
 def get_mask(original_image, hsv_window):
-        image = cv2.GaussianBlur(original_image,(11,11), 0)
-        debug('GaussianBlur', image)
+    image = cv2.GaussianBlur(original_image,(11,11), 0)
+    debug('GaussianBlur', image)
 
-        # Convert BGR to HSV
-        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    # Convert BGR to HSV
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        # define range of blue color in HSV
-        lower_blue = np.array([hsv_window["HUE-Lower"],hsv_window["SAT-Lower"],hsv_window["VAL-Lower"]])
-        upper_blue = np.array([hsv_window["HUE-Upper"],hsv_window["SAT-Upper"],hsv_window["VAL-Upper"]])
+    # define range of blue color in HSV
+    lower_blue = np.array([hsv_window["HUE-Lower"],hsv_window["SAT-Lower"],hsv_window["VAL-Lower"]])
+    upper_blue = np.array([hsv_window["HUE-Upper"],hsv_window["SAT-Upper"],hsv_window["VAL-Upper"]])
 
-        # Threshold the HSV image to get only blue colors
-        mask = cv2.inRange(hsv_image, lower_blue, upper_blue)
-        debug('mask', mask)
+    # Threshold the HSV image to get only blue colors
+    mask = cv2.inRange(hsv_image, lower_blue, upper_blue)
+    debug('mask', mask)
 
-        kernel = np.ones((5,5),np.uint8)
-        # opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-        erosion = cv2.erode(mask,kernel,iterations = 1)
-        dilation = cv2.dilate(erosion,kernel,iterations = 1)
-        mask = dilation
+    kernel = np.ones((5,5),np.uint8)
+    # opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    erosion = cv2.erode(mask,kernel,iterations = 1)
+    dilation = cv2.dilate(erosion,kernel,iterations = 1)
+    mask = dilation
 
-        debug('mask_erosion', mask)
+    debug('mask_erosion', mask)
 
-        # gaussian_blur = cv2.GaussianBlur(mask,(5,5), 0)
-        # _,thresh = cv2.threshold(gaussian_blur,100,255,cv2.THRESH_BINARY)
-        # mask = thresh
-        # cv2.imshow('GaussianBlur_mask', mask)
+    # gaussian_blur = cv2.GaussianBlur(mask,(5,5), 0)
+    # _,thresh = cv2.threshold(gaussian_blur,100,255,cv2.THRESH_BINARY)
+    # mask = thresh
+    # cv2.imshow('GaussianBlur_mask', mask)
 
-        median_blur = cv2.medianBlur(mask,5)
-        _,thresh = cv2.threshold(median_blur,100,255,cv2.THRESH_BINARY)
-        mask = thresh
-        cv2.imshow('MedianBlur_mask', mask)
+    median_blur = cv2.medianBlur(mask,5)
+    _,thresh = cv2.threshold(median_blur,100,255,cv2.THRESH_BINARY)
+    mask = thresh
+    cv2.imshow('MedianBlur_mask', mask)
 
-        return mask
+    return mask
 
 def apply_mask(original_image, background, mask):
     # Bitwise-AND mask and background image
